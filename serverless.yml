@@ -6,6 +6,8 @@ plugins:
   - serverless-dotenv-plugin
   - serverless-offline
   - serverless-apigw-binary
+  - serverless-dynamodb-local
+  - serverless-pseudo-parameters
 
 custom: 
   serverless-offline:
