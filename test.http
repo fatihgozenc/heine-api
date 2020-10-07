@@ -1,0 +1,6 @@
+POST		https://0pddrty3jh.execute-api.eu-central-1.amazonaws.com/dev/pdf
+
+{
+	"headers": "Content-Type: application/json",
+	"body": "{\"name\":\"localhttp\",\"password\":\"xyz\"}"
+}
