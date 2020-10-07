@@ -6,7 +6,6 @@ interface ScanResult {
 	Items: Array<{ name: string, age: number }>
 }
 
-
 exports.handler = async (event: APIGatewayEvent) => {
 
 	let scanParams = {

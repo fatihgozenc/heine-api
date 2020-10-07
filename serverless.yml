@@ -1,6 +1,22 @@
 service:
   name: heine-api
 
+plugins:
+  - serverless-webpack
+  - serverless-dotenv-plugin
+  - serverless-offline
+  - serverless-apigw-binary
+
+custom: 
+  serverless-offline:
+    layersDir: /layers
+  dynamodb:
+    stages:
+      - dev
+    start:
+      inMemory: true
+      migrate: true
+
 provider:
   name: aws
   runtime: nodejs12.x
@@ -11,13 +27,16 @@ provider:
   environment:
     IS_OFFLINE: ${opt:offline}
     AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
-
-# Add the serverless-webpack plugin
-plugins:
-  - serverless-webpack
-  - serverless-dotenv-plugin
-  - serverless-offline
-  - serverless-apigw-binary
+    DYNAMODB_PRODUCTS_TABLE: ${self:service}-products
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - dynamodb:PutItem
+        - dynamodb:Scan*
+        - dynamodb:GetItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: arn:aws:dynamodb:#{AWS::Region}:#{AWS::AccountId}:table/${self:provider.environment.DYNAMODB_PRODUCTS_TABLE}
 
 layers:
   HeadlessChrome:
@@ -36,10 +55,17 @@ custom:
         - chrome-aws-lambda
   serverless-offline:
     location: .webpack/service
+    httpPort: 4000
     useChildProcesses: true
   apigwBinary:
     types:
       - "*/*"
+  dynamodb:
+    stages:
+      - dev
+    start:
+      inMemory: true
+      migrate: true
 
 functions:
   pdf:
@@ -51,4 +77,39 @@ functions:
           method: post
           path: /pdf
           cors: true
+
+  create:
+    handler: api/create.handler
+    events:
+      - http:
+          path: /product
+          method: post
+
+  get:
+    handler: api/get.handler
+    events:
+      - http:
+          path: /product/{name}
+          method: get
+  
+  update:
+    handler: api/update.handler
+    events:
+      - http:
+          path: /product/{name}
+          method: put
+
+  delete:
+    handler: api/delete.handler
+    events:
+      - http:
+          path: /product/{name}
+          method: delete
+
+  list:
+    handler: api/list.handler
+    events:
+      - http:
+          path: /product
+          method: get
 
